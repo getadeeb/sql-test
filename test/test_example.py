@@ -43,6 +43,11 @@ class TestExample(DbTest):
         )
 
         sql = """
+        select (select count(sales_organization_id)
+        from enterprise_sales_enterprise_customers
+        where sales_organization_id = id)
+         AS subordinates_count, id
+        from organizations;
         """
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
@@ -88,6 +93,11 @@ class TestExample(DbTest):
         )
 
         sql = """
+        select id,
+       cast((select trim(trailing '0' from round(st_x(st_centroid(bounds))::numeric,13)::text))::numeric as float)
+           AS longitude,
+           cast( (select trim (trailing '0' from round(st_y(st_centroid(bounds))::numeric,13)::text))::numeric as float)
+               AS latitude from japan_segments;
         """
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
@@ -155,6 +165,14 @@ class TestExample(DbTest):
         )
 
         sql = """
+        select id from japan_segments js where st_within(js.bounds,
+    ST_GeomFromEWKT
+        ('SRID=4326;POLYGON((130.27313232421875 30.519681272749402,' ||
+         '131.02020263671875 30.519681272749402,' ||
+         '131.02020263671875 30.80909017893796,' ||
+         '130.27313232421875 30.80909017893796,' ||
+         '130.27313232421875 30.519681272749402))')
+    );
         """
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
